@@ -11,6 +11,10 @@ import SceneKit
 import ARKit
 
 class ViewController: UIViewController, ARSCNViewDelegate {
+    
+    //MARK: - RELEVANT VARIABLES
+    // array of scnNodes
+    var arrayOfDotNodes = [SCNNode]()
 
     @IBOutlet var sceneView: ARSCNView!
     
@@ -20,14 +24,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Set the view's delegate
         sceneView.delegate = self
         
-        // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+        //debug option so I can visualize better
+        sceneView.debugOptions = [ARSCNDebugOptions.showFeaturePoints]
         
-        // Create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
-        
-        // Set the scene to the view
-        sceneView.scene = scene
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -40,36 +39,69 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.run(configuration)
     }
     
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
+    //MARK: - Handles touch recognition
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        // endroit ou on touche
+        if let touchLocation = touches.first?.location(in: sceneView) {
+            let hitTestResults = sceneView.hitTest(touchLocation, types: .featurePoint)
+            //ce qui se passe si on touche un point
+            if let hitResult = hitTestResults.first {
+                //on affiche un cercle pour visualiser cela
+                cercleRouge(at: hitResult)
+                
+            }
+        }
+     
+    }
+    
+    //MARK: - Fonction creant un cercle
+    func cercleRouge(at hitLocation: ARHitTestResult) {
+        // on cree une sphere et on lui donne 1 rayon
+        let dotGeometry = SCNSphere(radius: 0.005)
+        // on cree un material
+        let material = SCNMaterial()
+        // on donne des valeurs au material
+        material.diffuse.contents = UIColor.systemPurple
         
-        // Pause the view's session
-        sceneView.session.pause()
+        // on affecte ces valeurs a la sphere
+        dotGeometry.materials = [material]
+        //positions sur l'endroit ou on a cliqué
+        let dotNode = SCNNode()
+        dotNode.position = SCNVector3(hitLocation.worldTransform.columns.3.x, hitLocation.worldTransform.columns.3.y, hitLocation.worldTransform.columns.3.z)
+        
+        //On place la sphere sur l'axe
+        dotNode.geometry = dotGeometry
+        // on place le node dans le sceneview
+        sceneView.scene.rootNode.addChildNode(dotNode)
+        
+        //PS : Chaque fois qu'on cree un node on l'ajoute au tableau de node
+        arrayOfDotNodes.append(dotNode)
+        //ensuite si on a au moins 2 point cliqués on peut calculer la distance soit
+        if arrayOfDotNodes.count >= 2 {
+            calculDeDistance()
+        }
+        // PS: meilleure visualisation
+        sceneView.autoenablesDefaultLighting = true
+    }
+    
+    //MARK: - Fonction qui permet de calculer la distance entre deux points sur lesquels on a cliqué
+    func calculDeDistance() {
+        let start = arrayOfDotNodes[0]
+        let finish = arrayOfDotNodes[1]
+        
+        // pour calculer la distance on a besoin de 3 variables et d'une formule
+        let a = finish.position.x - start.position.x
+        let b = finish.position.y - start.position.y
+        let c = finish.position.z - start.position.z
+        
+        // ensuite la formule: on additionne chaque element a qui on donne une exposant 2
+        let distance = sqrt(pow(a, 2) + pow(b, 2) + pow(c, 2))
+        
+        // on imprime la distance en valeur absolue, pour ne pas prendre en compte les nombres negatifs x 100
+        print("La distance est \(abs(distance * 100)) cm.")
+
+
     }
 
-    // MARK: - ARSCNViewDelegate
-    
-/*
-    // Override to create and configure nodes for anchors added to the view's session.
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let node = SCNNode()
-     
-        return node
-    }
-*/
-    
-    func session(_ session: ARSession, didFailWithError error: Error) {
-        // Present an error message to the user
-        
-    }
-    
-    func sessionWasInterrupted(_ session: ARSession) {
-        // Inform the user that the session has been interrupted, for example, by presenting an overlay
-        
-    }
-    
-    func sessionInterruptionEnded(_ session: ARSession) {
-        // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
-    }
+ 
 }
