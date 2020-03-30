@@ -15,6 +15,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     //MARK: - RELEVANT VARIABLES
     // array of scnNodes
     var arrayOfDotNodes = [SCNNode]()
+    var textNode = SCNNode()
 
     @IBOutlet var sceneView: ARSCNView!
     
@@ -41,6 +42,16 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     //MARK: - Handles touch recognition
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        
+        //ici on gere le fait de recommencer les mesures si on touche l'ecran au moins 3 fois
+        if arrayOfDotNodes.count >= 2 {
+            // boucle
+            for dot in arrayOfDotNodes {
+                dot.removeFromParentNode()
+            }
+            // ensuite on vide le tableau de nodes pour recommencer mesures
+            arrayOfDotNodes = [SCNNode]()
+        }
         // endroit ou on touche
         if let touchLocation = touches.first?.location(in: sceneView) {
             let hitTestResults = sceneView.hitTest(touchLocation, types: .featurePoint)
@@ -109,7 +120,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     //MARK: - Fonction qui gere le texte en 3D qui est la distance
     func afficherLeTexteEn3D(text: String, atPosition position: SCNVector3) {
-        // on cree un texte en 3d
+        
+        // en premier on enleve le precedent node pour permettre nouvelle mesure
+        textNode.removeFromParentNode()
+        // puis on cree un texte en 3d
         let textGeometry = SCNText(string: text, extrusionDepth: 1.0)
         
         //material
@@ -120,7 +134,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         //textGeometry.firstMaterial?.diffuse.contents = UIColor.systemPurple
         
         //node
-        let textNode = SCNNode(geometry: textGeometry)
+        textNode = SCNNode(geometry: textGeometry)
         textNode.position = SCNVector3(Float(CGFloat(position.x)), position.y + 0.01, position.z)
         // taille de la figure
         textNode.scale = SCNVector3(0.01, 0.01, 0.01)
