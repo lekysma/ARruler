@@ -101,14 +101,14 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // on imprime la distance en valeur absolue, pour ne pas prendre en compte les nombres negatifs x 100
         print("La distance est \(abs(distance * 100)) cm.")
-        afficherLeTexteEn3D(text: "\(abs(distance * 100))cm")
+        afficherLeTexteEn3D(text: "\(abs(distance * 100))cm", atPosition: finish.position)
       
 
 
     }
     
     //MARK: - Fonction qui gere le texte en 3D qui est la distance
-    func afficherLeTexteEn3D(text: String) {
+    func afficherLeTexteEn3D(text: String, atPosition position: SCNVector3) {
         // on cree un texte en 3d
         let textGeometry = SCNText(string: text, extrusionDepth: 1.0)
         
@@ -121,7 +121,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         //node
         let textNode = SCNNode(geometry: textGeometry)
-        textNode.position = SCNVector3(0, 0.01, -0.1)
+        textNode.position = SCNVector3(Float(CGFloat(position.x)), position.y + 0.01, position.z)
         // taille de la figure
         textNode.scale = SCNVector3(0.01, 0.01, 0.01)
         
