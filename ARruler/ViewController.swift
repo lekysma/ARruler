@@ -97,11 +97,35 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // ensuite la formule: on additionne chaque element a qui on donne une exposant 2
         let distance = sqrt(pow(a, 2) + pow(b, 2) + pow(c, 2))
         
+        //texteEn3D(texte: "\(distance)")
+        
         // on imprime la distance en valeur absolue, pour ne pas prendre en compte les nombres negatifs x 100
         print("La distance est \(abs(distance * 100)) cm.")
+        afficherLeTexteEn3D(text: "\(abs(distance * 100))cm")
+      
 
 
     }
-
+    
+    //MARK: - Fonction qui gere le texte en 3D qui est la distance
+    func afficherLeTexteEn3D(text: String) {
+        // on cree un texte en 3d
+        let textGeometry = SCNText(string: text, extrusionDepth: 1.0)
+        
+        //material
+        let textMaterial = SCNMaterial()
+        textMaterial.diffuse.contents = UIColor.systemPurple
+        textGeometry.materials = [textMaterial]
+        //1 seul material affecté
+        //textGeometry.firstMaterial?.diffuse.contents = UIColor.systemPurple
+        
+        //node
+        let textNode = SCNNode(geometry: textGeometry)
+        textNode.position = SCNVector3(0, 0.01, -0.1)
+        // taille de la figure
+        textNode.scale = SCNVector3(0.01, 0.01, 0.01)
+        
+        sceneView.scene.rootNode.addChildNode(textNode)
+    }
  
 }
